@@ -1,0 +1,5 @@
+node_modules/
+browser.js
+dump.rdb
+.ninja_*
+pixi.js

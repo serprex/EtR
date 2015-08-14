@@ -1,0 +1,4 @@
+rule mkcjs
+ command=mkcjs $out $in
+build browser.js:mkcjs ui.main.js px.js ui.js util.js sock.js MersenneTwister.js
+default browser.js
