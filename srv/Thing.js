@@ -12,7 +12,7 @@ Thing.prototype.fire = function(cmd, data){
 Thing.prototype.setpos = function(x, y){
 	this.x = x;
 	this.y = y;
-	this.fire("setpos", {x:x, y:y});
+	this.fire("setpos", {x:(x*24)|0, y:(y*24)|0});
 }
 Thing.prototype.move = function(dx, dy){
 	var colwith = this.colcheck(this.x+dx, this.y+dy);
@@ -32,7 +32,7 @@ Thing.prototype.colcheck = function(x, y){
 	var things = this.world.things;
 	for(var i=0; i<things.length; i++){
 		var thing = things[i];
-		if (thing != this && thing.solid && x+1>thing.x && x<thing.x+1 && y+1>thing.y && y<thing.y+1) return thing;
+		if (thing && thing != this && thing.solid && x+1>thing.x && x<thing.x+1 && y+1>thing.y && y<thing.y+1) return thing;
 	}
 }
 Thing.prototype.toJSON = function(){

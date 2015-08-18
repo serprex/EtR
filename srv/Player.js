@@ -10,7 +10,7 @@ Player.prototype = Object.create(Thing.prototype);
 Player.prototype.act = function(){
 	var dx = (this.keys[68]||0)-(this.keys[65]||0), dy = (this.keys[83]||0)-(this.keys[87]||0);
 	if (dx || dy){
-		var m = (dx&&dy?8*Math.sqrt(2):8);
+		var m = (dx&&dy?480*Math.sqrt(2):480)/32;
 		this.move(dx/m, dy/m);
 	}
 }

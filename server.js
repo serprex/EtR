@@ -7,7 +7,7 @@ var app = require("connect")().
 var Globe = new World();
 wss = new (require("ws/lib/WebSocketServer"))({server:app.listen(80)});
 sutil.wss = wss;
-var interval = setInterval(Globe.step.bind(Globe), 50);
+var interval = setInterval(Globe.step.bind(Globe), 20);
 var Wall = require("./srv/Wall");
 Globe.add(new Wall(2, 3));
 Globe.add(new Wall(2, 4));
@@ -21,9 +21,8 @@ wss.on("connection", function(socket){
 	});
 	socket.on("message", function(rawdata){
 		var data = sutil.parseJSON(rawdata);
-		console.log(data);
 		if (!data) return;
-		console.log(this.meta.player.x, this.meta.player.y);
+		console.log(data, this.meta.player.x, this.meta.player.y);
 		if (data._ == "kd") this.meta.player.keys[data.c] = true;
 		else if (data._ == "ku") this.meta.player.keys[data.c] = false;
 	});

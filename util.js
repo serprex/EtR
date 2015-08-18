@@ -1,5 +1,6 @@
 "use strict";
 var sock = require("./sock");
+var gfx = require("./gfx");
 function World(display){
 	this.display = display;
 	this.things = [];
@@ -30,12 +31,14 @@ function Thing(x,y){
 	this.setpos(x||-1, y||-1);
 }
 function Player(){
-	this.gfx = new PIXI.Graphics();
-	this.gfx.beginFill(0x336699);
-	this.gfx.drawRect(0, 0, 24, 24);
+	this.gfx = new PIXI.Sprite(gfx.birddown[0]);
+	this.gfx.scale.set(2,2);
+	this.gfx.anchor.x = .5;
 	Thing.apply(this, arguments);
 	this.hp = 10;
+	this.frame = 0;
 	this.quanta = new Uint8Array(12);
+	this.dir = 3;
 }
 function Wall(){
 	this.gfx = new PIXI.Graphics();
@@ -57,6 +60,15 @@ World.prototype.hookControls = function(){
 		self.keys[e.keyCode] = false;
 	});
 }
+var pafps = 32/60;
+var dirname = ["side", "up", "side", "down"];
+Player.prototype.act = function(){
+	this.frame += pafps;
+	var g = gfx["bird"+dirname[this.dir]];
+	if (this.frame >= g.length) this.frame -= g.length;
+	this.gfx.texture = g[Math.floor(this.frame)];
+	this.gfx.scale.x = this.dir?2:-2;
+}
 World.prototype.step = function(){
 	this.things.forEach(function(thing){
 		if (thing.act) thing.act();
@@ -74,15 +86,18 @@ World.prototype.fromArray = function(o){
 		this.add(os[data.oid].call(data), data.i);
 	}, this);
 }
+Player.prototype._setpos = function(x,y){
+	this.dir = x>this.x?0:y<this.y?1:x<this.x?2:3;
+}
 Thing.prototype.setpos = function(x,y){
 	if (arguments.length == 1){
-		this.x = x.x;
-		this.y = x.y;
-	}else{
-		this.x = x;
-		this.y = y;
+		y = x.y/24;
+		x = x.x/24;
 	}
-	this.gfx.position.set(this.x*24, this.y*24);
+	if (this._setpos) this._setpos(x, y);
+	this.x = x;
+	this.y = y;
+	this.gfx.position.set(x*24, y*24);
 }
 Thing.prototype.move = function(dx, dy){
 	var colwith = this.colcheck(this.x+dx, this.y+dy);
