@@ -1,11 +1,18 @@
-window.PIXI = require("./pixi");
 var util = require("./util");
 module.exports = function(canvas){
-	require("./gfx").load(null, function(){
+	var gfx = require("./gfx");
+	gfx.load(canvas, function(){
 		var px = require("./px");
-		px.init(canvas);
-		var lv = new PIXI.Container();
-		var world = new util.World(lv);
+		/*var lv = new PIXI.Container();
+		for(var i=0; i<10; i++){
+			for(var j=0; j<10; j++){
+				var t = new PIXI.Sprite(gfx.tiles);
+				t.position.set(i*144, j*144);
+				t.scale.set(2, 2);
+				lv.addChild(t);
+			}
+		}*/
+		var world = new util.World();
 		var sock = require("./sock");
 		sock.et.onmessage = function(msg){
 			var data = JSON.parse(msg.data);
@@ -19,6 +26,10 @@ module.exports = function(canvas){
 		world.add(new util.Wall(3, 6));*/
 		world.hookControls();
 		var interval = setInterval(world.step.bind(world), 60);
-		px.view({view:lv, endnext: function(){clearInterval(interval)}});
+		function anim(){
+			world.render();
+			requestAnimationFrame(anim);
+		}
+		anim();
 	});
 }

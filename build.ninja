@@ -6,7 +6,7 @@ rule ssheet
  command=spritesheet-js $in --customFormat atlas.template --extension=js -n assets/atlas
 rule uglify
  command=uglifyjs $in --screw-ie8 --source-map $out.map -mco $out
-build browser.js:mkcjs gfx.js ui.main.js px.js ui.js util.js sock.js MersenneTwister.js assets/atlas.js
-build assets/atlas.js:ssheet assets/birddown0.png assets/birddown1.png assets/birddown2.png assets/birddown3.png assets/birddown4.png assets/birddown5.png assets/birddown6.png assets/birddown7.png assets/birdside0.png assets/birdside1.png assets/birdside2.png assets/birdside3.png assets/birdside4.png assets/birdside5.png assets/birdside6.png assets/birdside7.png assets/birdup0.png assets/birdup1.png assets/birdup2.png assets/birdup3.png assets/birdup4.png assets/birdup5.png assets/birdup6.png assets/birdup7.png
+build browser.js:mkcjs gfx.js ui.main.js ui.js util.js sock.js MersenneTwister.js assets/atlas.js
+build assets/atlas.js:ssheet assets/birddown0.png assets/birddown1.png assets/birddown2.png assets/birddown3.png assets/birddown4.png assets/birddown5.png assets/birddown6.png assets/birddown7.png assets/birdside0.png assets/birdside1.png assets/birdside2.png assets/birdside3.png assets/birdside4.png assets/birdside5.png assets/birdside6.png assets/birdside7.png assets/birdup0.png assets/birdup1.png assets/birdup2.png assets/birdup3.png assets/birdup4.png assets/birdup5.png assets/birdup6.png assets/birdup7.png assets/tiles.png
 build assets/atlas.png:optipng assets/atlas.js
 default browser.js assets/atlas.png

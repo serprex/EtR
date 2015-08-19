@@ -7,14 +7,12 @@ function World(display){
 	this.keys = [];
 }
 World.prototype.add = function(obj, idx){
-	if (obj.gfx) this.display.addChild(obj.gfx);
 	obj.idx = idx;
 	this.things[idx] = obj;
 	obj.world = this;
 }
 World.prototype.rm = function(obj){
 	delete this.things[obj.idx];
-	if (obj.gfx) this.display.removeChild(obj.gfx);
 }
 World.prototype.np = function(e){
 	this.add(new Player(), e.i);
@@ -31,9 +29,7 @@ function Thing(x,y){
 	this.setpos(x||-1, y||-1);
 }
 function Player(){
-	this.gfx = new PIXI.Sprite(gfx.birddown[0]);
-	this.gfx.scale.set(2,2);
-	this.gfx.anchor.x = .5;
+	this.gfx = gfx.birddown[0];
 	Thing.apply(this, arguments);
 	this.hp = 10;
 	this.frame = 0;
@@ -41,9 +37,6 @@ function Player(){
 	this.dir = 3;
 }
 function Wall(){
-	this.gfx = new PIXI.Graphics();
-	this.gfx.beginFill(0x443333);
-	this.gfx.drawRect(0, 0, 24, 24);
 	Thing.apply(this, arguments);
 }
 Player.prototype = Object.create(Thing.prototype);
@@ -59,6 +52,16 @@ World.prototype.hookControls = function(){
 		if (self.keys[e.keyCode]) sock.userEmit("ku", {c:e.keyCode});
 		self.keys[e.keyCode] = false;
 	});
+	var lastmove = 0;
+	document.addEventListener("mousemove", function(e){
+		if (e.timeStamp - lastmove < 16){
+			e.stopPropagation();
+		}else{
+			this.mx = e.clientX;
+			this.my = e.clientY;
+			lastmove = e.timeStamp;
+		}
+	});
 }
 var pafps = 32/60;
 var dirname = ["side", "up", "side", "down"];
@@ -66,8 +69,7 @@ Player.prototype.act = function(){
 	this.frame += pafps;
 	var g = gfx["bird"+dirname[this.dir]];
 	if (this.frame >= g.length) this.frame -= g.length;
-	this.gfx.texture = g[Math.floor(this.frame)];
-	this.gfx.scale.x = this.dir?2:-2;
+	this.gfx = g[Math.floor(this.frame)];
 }
 World.prototype.step = function(){
 	this.things.forEach(function(thing){
@@ -79,7 +81,6 @@ World.prototype.world = function(data){
 	this.fromArray(data.o);
 }
 World.prototype.fromArray = function(o){
-	this.things.forEach(function(obj){if (obj.gfx) this.display.removeChild(obj.gfx);}, this);
 	this.things.length = 0;
 	o.forEach(function(data){
 		console.log(data);
@@ -97,7 +98,6 @@ Thing.prototype.setpos = function(x,y){
 	if (this._setpos) this._setpos(x, y);
 	this.x = x;
 	this.y = y;
-	this.gfx.position.set(x*24, y*24);
 }
 Thing.prototype.move = function(dx, dy){
 	var colwith = this.colcheck(this.x+dx, this.y+dy);
@@ -119,6 +119,21 @@ Thing.prototype.colcheck = function(x, y){
 		var thing = things[i];
 		if (thing != this && thing.solid && x+1>thing.x && x<thing.x+1 && y+1>thing.y && y<thing.y+1) return thing;
 	}
+}
+World.prototype.render = function(){
+	var ctx = gfx.begin();
+	for(var i=0; i<4; i++){
+		for(var j=0; j<4; j++){
+			ctx.draw(gfx.tiles, i*3, j*3);
+		}
+	}
+	this.things.forEach(function(thing){
+		if (thing.render) thing.render(ctx);
+	});
+	ctx.render();
+}
+Player.prototype.render = function(ctx){
+	ctx.draw(this.gfx, this.x, this.y, this.dir == 0);
 }
 exports.World = World;
 exports.Thing = Thing;
