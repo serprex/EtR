@@ -44,9 +44,6 @@ exports.load = function(canvas, postload){
 	gl.useProgram(prog);
 	prog.vertexPositionAttribute = gl.getAttribLocation(prog, "aVertexPosition");
 	prog.textureCoordAttribute = gl.getAttribLocation(prog, "aTextureCoord");
-	//prog.pMatrixUniform = gl.getUniformLocation(prog, "uPMatrix");
-	//prog.uMVMatrixUniform = gl.getUniformLocation(prog, "uMVMatrix");
-	//prog.samplerUniform = gl.getUniformLocation(prog, "uSampler");
 	prog.uResolution = gl.getUniformLocation(prog, "uResolution");
 	gl.uniform2f(prog.uResolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
 	gl.enableVertexAttribArray(prog.vertexPositionAttribute);
@@ -54,12 +51,19 @@ exports.load = function(canvas, postload){
 
 	exports.prog = prog;
 	var atlas = exports.atlas = gl.createTexture();
-	function process(asset, tex, base){
-		var id = asset.match(/\d+$/), tex = new Texture(tex, base[0]/img.width, base[1]/img.height, base[2]/img.width, base[3]/img.height);
+	function process(asset, texture, base){
+		var id = asset.match(/\d+$/), tex = new Texture(texture, base[0]/img.width, base[1]/img.height, base[2]/img.width, base[3]/img.height);
 		if (id){
 			asset = asset.slice(0, -id[0].length);
 			if (!(asset in exports)) exports[asset] = [];
 			exports[asset][id[0]] = tex;
+		}else if (asset.match(/^tiles_/)){
+			exports[asset] = [];
+			for(var i=0; i<3; i++){
+				for(var j=0; j<3; j++){
+					exports[asset][i*3+j] = new Texture(texture, base[0]/img.width+(base[2]*i/img.width/3), base[1]/img.height+(base[3]*i/img.height/3), base[2]/img.width/3, base[3]/img.height/3);
+				}
+			}
 		}else exports[asset] = tex;
 	}
 	var img = new Image();

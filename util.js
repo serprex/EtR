@@ -5,6 +5,43 @@ function World(display){
 	this.display = display;
 	this.things = [];
 	this.keys = [];
+	var tiles = [];
+	var ttype = ["stonegrass", "grass", "grass", "grass", "wall", "waterstone"];
+	var wid = 20, hei = 15;
+	for(var i=-1; i<wid+1; i++){
+		tiles[i] = [];
+		for(var j=-1; j<hei+1; j++){
+			tiles[i].push(Math.floor(Math.random()*ttype.length));
+		}
+	}
+	this.tiles = [];
+	for(var i=0; i<wid; i++){
+		this.tiles[i] = [];
+		for(var j=0; j<hei; j++){
+			var tt = ttype[tiles[i][j]];
+			var t = 4;
+			if (tt != "grass"){
+				if (tiles[i][j] != tiles[i+1][j-1] && tt != "wall"){
+					t = 2;
+				}else if (tiles[i][j] != tiles[i-1][j-1] && tt != "wall"){
+					t = 0;
+				}else if (tiles[i][j] != tiles[i][j-1] && tt != "wall"){
+					t = 1;
+				}else if (tiles[i][j] != tiles[i][j+1]){
+					t = 7;
+				}else if (tiles[i][j] != tiles[i+1][j]){
+					t = 5;
+				}else if (tiles[i][j] != tiles[i-1][j]){
+					t = 3;
+				}else if (tiles[i][j] != tiles[i+1][j+1]){
+					t = 8;
+				}else if (tiles[i][j] != tiles[i-1][j+1]){
+					t = 6;
+				}
+			}
+			this.tiles[i].push(gfx["tiles_"+tt][t]);
+		}
+	}
 }
 World.prototype.add = function(obj, idx){
 	obj.idx = idx;
@@ -122,14 +159,21 @@ Thing.prototype.colcheck = function(x, y){
 }
 World.prototype.render = function(){
 	var ctx = gfx.begin();
-	for(var i=0; i<4; i++){
-		for(var j=0; j<4; j++){
-			ctx.draw(gfx.tiles, i*3, j*3);
+	for(var i=0; i<this.tiles.length; i++){
+		for(var j=0; j<this.tiles[i].length; j++){
+			ctx.draw(this.tiles[i][j], i, j);
 		}
 	}
 	this.things.forEach(function(thing){
 		if (thing.render) thing.render(ctx);
 	});
+	for(var i=0; i<this.tiles.length; i++){
+		for(var j=0; j<this.tiles[i].length; j++){
+			if (~gfx.tiles_wall.indexOf(this.tiles[i][j]) && !~gfx.tiles_wall.indexOf(this.tiles[i][j-1])){
+				ctx.draw(gfx.tiles_wall[gfx.tiles_wall.indexOf(this.tiles[i][j])%3], i, j-1);
+			}
+		}
+	}
 	ctx.render();
 }
 Player.prototype.render = function(ctx){
