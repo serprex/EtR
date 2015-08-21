@@ -17,7 +17,7 @@ exports.emit = function(sock, cmd, data){
 		sock.send(msg);
 	}
 }
-exports.broadcast = function(cmd, data){
+exports.broadcast = function(cmd, data, skip){
 	console.log(cmd, data);
 	var wss = exports.wss;
 	if (wss){
@@ -25,7 +25,7 @@ exports.broadcast = function(cmd, data){
 		data._ = cmd;
 		var msg = JSON.stringify(data);
 		wss.clients.forEach(function(sock){
-			if (sock.readyState == 1) sock.send(msg);
+			if (sock.readyState == 1 && sock != skip) sock.send(msg);
 		});
 	}
 }

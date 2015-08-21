@@ -35,7 +35,7 @@ Thing.prototype.colcheck = function(x, y){
 		if (thing && thing != this && thing.solid && x+1>thing.x && x<thing.x+1 && y+1>thing.y && y<thing.y+1) return thing;
 	}
 }
-Thing.prototype.toJSON = function(){
+Thing.prototype.toJSON = function(isfollow){
 	return this._toJSON({i:this.idx, x:this.x, y:this.y});
 }
 module.exports = Thing;

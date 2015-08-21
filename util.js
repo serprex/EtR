@@ -1,41 +1,44 @@
 "use strict";
 var sock = require("./sock");
 var gfx = require("./gfx");
-function World(display){
-	this.display = display;
+function World(){
 	this.things = [];
 	this.keys = [];
+	this.follow = null;
 	var tiles = [];
+	this.w = 60;
+	this.h = 60;
+	this.cw = 450/24;
+	this.ch = 300/24;
 	var ttype = ["stonegrass", "grass", "grass", "grass", "wall", "waterstone"];
-	var wid = 20, hei = 15;
-	for(var i=-1; i<wid+1; i++){
+	for(var i=0; i<this.w; i++){
 		tiles[i] = [];
-		for(var j=-1; j<hei+1; j++){
+		for(var j=0; j<this.h; j++){
 			tiles[i].push(Math.floor(Math.random()*ttype.length));
 		}
 	}
 	this.tiles = [];
-	for(var i=0; i<wid; i++){
+	for(var i=0; i<this.w; i++){
 		this.tiles[i] = [];
-		for(var j=0; j<hei; j++){
+		for(var j=0; j<this.h; j++){
 			var tt = ttype[tiles[i][j]];
 			var t = 4;
 			if (tt != "grass"){
-				if (tiles[i][j] != tiles[i+1][j-1] && tt != "wall"){
+				if (j>0 && i<this.w-1 && tiles[i][j] != tiles[i+1][j-1] && tt != "wall"){
 					t = 2;
-				}else if (tiles[i][j] != tiles[i-1][j-1] && tt != "wall"){
+				}else if (i>0 && j>0 && tiles[i][j] != tiles[i-1][j-1] && tt != "wall"){
 					t = 0;
-				}else if (tiles[i][j] != tiles[i][j-1] && tt != "wall"){
+				}else if (j>0 && tiles[i][j] != tiles[i][j-1] && tt != "wall"){
 					t = 1;
-				}else if (tiles[i][j] != tiles[i][j+1]){
+				}else if (j<this.h-1 && tiles[i][j] != tiles[i][j+1]){
 					t = 7;
-				}else if (tiles[i][j] != tiles[i+1][j]){
+				}else if (i<this.w-1 && tiles[i][j] != tiles[i+1][j]){
 					t = 5;
-				}else if (tiles[i][j] != tiles[i-1][j]){
+				}else if (i>0 && tiles[i][j] != tiles[i-1][j]){
 					t = 3;
-				}else if (tiles[i][j] != tiles[i+1][j+1]){
+				}else if (i<this.w-1 && j<this.h-1 && tiles[i][j] != tiles[i+1][j+1]){
 					t = 8;
-				}else if (tiles[i][j] != tiles[i-1][j+1]){
+				}else if (i>0 && j<this.h-1 && tiles[i][j] != tiles[i-1][j+1]){
 					t = 6;
 				}
 			}
@@ -49,6 +52,7 @@ World.prototype.add = function(obj, idx){
 	obj.world = this;
 }
 World.prototype.rm = function(obj){
+	if (obj == this.follow) this.follow = null;
 	delete this.things[obj.idx];
 }
 World.prototype.np = function(e){
@@ -115,14 +119,13 @@ World.prototype.step = function(){
 }
 var os = [function(){var p=new Player(this.x, this.y);p.hp=this.hp;p.quanta=this.quanta;return p;}, function(){return new Wall(this.x, this.y);}];
 World.prototype.world = function(data){
-	this.fromArray(data.o);
-}
-World.prototype.fromArray = function(o){
 	this.things.length = 0;
-	o.forEach(function(data){
-		console.log(data);
-		this.add(os[data.oid].call(data), data.i);
+	data.o.forEach(function(obj){
+		console.log(obj);
+		var inst = os[obj.oid].call(obj);
+		this.add(inst, obj.i);
 	}, this);
+	this.follow = this.things[data.f];
 }
 Player.prototype._setpos = function(x,y){
 	this.dir = x>this.x?0:y<this.y?1:x<this.x?2:3;
@@ -158,18 +161,38 @@ Thing.prototype.colcheck = function(x, y){
 	}
 }
 World.prototype.render = function(){
-	var ctx = gfx.begin();
-	for(var i=0; i<this.tiles.length; i++){
-		for(var j=0; j<this.tiles[i].length; j++){
-			ctx.draw(this.tiles[i][j], i, j);
+	if (!this.follow) return;
+	var x1 = this.follow.x - this.cw/2, y1 = this.follow.y - this.ch/2,
+		x2 = x1 + this.cw, y2 = y1 + this.ch;
+	if (x2 > this.w){
+		x1 = this.w - this.cw;
+		x2 = this.w;
+	}else if (x1<0){
+		x1 = 0;
+		x2 = this.cw;
+	}
+	if (y2 > this.h){
+		y1 = this.h - this.ch;
+		y2 = this.h;
+	}else if (y1<0){
+		y1 = 0;
+		y2 = this.ch;
+	}
+	var ctx = gfx.ctx;
+	ctx.begin(x1, y1, x2, y2);
+	var fx1 = Math.floor(x1), fy1 = Math.floor(y1);
+	for(var i=fx1; i<=x2; i++){
+		for(var j=fy1; j<=y2; j++){
+			if (this.tiles[i] && this.tiles[i][j]) ctx.draw(this.tiles[i][j], i, j);
 		}
 	}
 	this.things.forEach(function(thing){
 		if (thing.render) thing.render(ctx);
 	});
-	for(var i=0; i<this.tiles.length; i++){
-		for(var j=0; j<this.tiles[i].length; j++){
-			if (~gfx.tiles_wall.indexOf(this.tiles[i][j]) && !~gfx.tiles_wall.indexOf(this.tiles[i][j-1])){
+	for(var i=fx1; i<=x2; i++){
+		for(var j=fy1+1; j<=Math.min(y2+1, this.h); j++){
+			if (this.tiles[i] && this.tiles[i][j] && this.tiles[i][j-1] &&
+				~gfx.tiles_wall.indexOf(this.tiles[i][j]) && !~gfx.tiles_wall.indexOf(this.tiles[i][j-1])){
 				ctx.draw(gfx.tiles_wall[gfx.tiles_wall.indexOf(this.tiles[i][j])%3], i, j-1);
 			}
 		}

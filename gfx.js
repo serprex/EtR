@@ -108,6 +108,14 @@ function Texture(t, x, y, w, h){
 var ctx = {
 	coords:[],
 	verts:[],
+	begin:function(x1, y1, x2, y2){
+		this.coords.length = 0;
+		this.verts.length = 0;
+		this.x1 = x1;
+		this.y1 = y1;
+		this.x2 = x2;
+		this.y2 = y2;
+	},
 	draw:function(g, x, y, hflip){
 		var x1=g.x, y1=g.y, x2=g.x+g.w, y2=g.y+g.h;
 		if (hflip){
@@ -121,10 +129,10 @@ var ctx = {
 			x1, y2,
 			x2, y1,
 			x2, y2);
-		x1 = x*24;
-		x2 = x*24+g.w*exports.atlasWidth;
-		y1 = y*24;
-		y2 = y*24+g.h*exports.atlasHeight;
+		x1 = (x-this.x1)*24;
+		x2 = x1+g.w*exports.atlasWidth;
+		y1 = (y-this.y1)*24;
+		y2 = y1+g.h*exports.atlasHeight;
 		this.verts.push(x1, y1,
 			x2, y1,
 			x1, y2,
@@ -144,10 +152,6 @@ var ctx = {
 		gl.drawArrays(gl.TRIANGLES, 0, this.coords.length/2);
 	},
 };
-exports.begin = function(){
-	ctx.coords.length = 0;
-	ctx.verts.length = 0;
-	return ctx;
-}
+exports.ctx = ctx;
 exports.Text = Text;
 exports.Texture = Texture;

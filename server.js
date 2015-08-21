@@ -26,6 +26,7 @@ wss.on("connection", function(socket){
 		if (data._ == "kd") this.meta.player.keys[data.c] = true;
 		else if (data._ == "ku") this.meta.player.keys[data.c] = false;
 	});
-	console.log(Globe.toJSON());
-	sutil.emit(socket, "world", Globe.toJSON());
+	var json = Globe.toJSON(socket.meta.player);
+	console.log(json);
+	sutil.emit(socket, "world", json);
 });

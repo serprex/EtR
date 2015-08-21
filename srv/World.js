@@ -21,11 +21,11 @@ World.prototype.rm = function(obj){
 	this.things[obj.idx] = null;
 	obj.idx = -1;
 }
-World.prototype.createPlayer = function(){
+World.prototype.createPlayer = function(socket){
 	var Player = require("./Player");
 	var p = new Player(0, 0);
 	this.add(p);
-	sutil.broadcast("np", {i:p.idx});
+	sutil.broadcast("np", {i:p.idx}, socket);
 	return p;
 }
 World.prototype.step = function(){
@@ -33,11 +33,13 @@ World.prototype.step = function(){
 		if (thing && thing.act) thing.act();
 	});
 }
-World.prototype.toJSON = function(){
-	var o = [];
-	this.things.forEach(function(thing){
-		o.push(thing.toJSON());
+World.prototype.toJSON = function(player){
+	var data = {o:[]};
+	this.things.forEach(function(thing, idx){
+		var json = thing.toJSON();
+		if (thing == player) data.f = idx;
+		data.o.push(json);
 	});
-	return {o:o};
+	return data;
 }
 module.exports = World;

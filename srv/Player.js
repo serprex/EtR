@@ -14,7 +14,7 @@ Player.prototype.act = function(){
 		this.move(dx/m, dy/m);
 	}
 }
-Player.	prototype._toJSON = function(data){
+Player.prototype._toJSON = function(data){
 	data.oid = 0;
 	data.hp = this.hp;
 	data.quanta = sutil.untypeArray(this.quanta);
