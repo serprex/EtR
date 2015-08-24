@@ -52,17 +52,28 @@ exports.load = function(canvas, postload){
 	exports.prog = prog;
 	var atlas = exports.atlas = gl.createTexture();
 	function process(asset, texture, base){
+		function tempf(x,y){
+			var w = base[2]/img.width/3, h = base[3]/img.height/(is4?5:3);
+			return new Texture(texture, base[0]/img.width+(x*w), base[1]/img.height+(y*h), w, h);
+		}
 		var id = asset.match(/\d+$/), tex = new Texture(texture, base[0]/img.width, base[1]/img.height, base[2]/img.width, base[3]/img.height);
 		if (id){
 			asset = asset.slice(0, -id[0].length);
 			if (!(asset in exports)) exports[asset] = [];
 			exports[asset][id[0]] = tex;
 		}else if (asset.match(/^tiles_/)){
-			exports[asset] = [];
+			var is4 = asset == "tiles_stonegrass";
+			exports[asset] = new Array(is4?13:9);
 			for(var i=0; i<3; i++){
 				for(var j=0; j<3; j++){
-					exports[asset][i*3+j] = new Texture(texture, base[0]/img.width+(base[2]*i/img.width/3), base[1]/img.height+(base[3]*i/img.height/3), base[2]/img.width/3, base[3]/img.height/3);
+					exports[asset][i*3+j] = tempf(j,i);
 				}
+			}
+			if (is4){
+				exports[asset][9] = tempf(1,3);
+				exports[asset][10] = tempf(2,3);
+				exports[asset][11] = tempf(1,4);
+				exports[asset][12] = tempf(2,4);
 			}
 		}else exports[asset] = tex;
 	}

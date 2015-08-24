@@ -1,6 +1,130 @@
 "use strict";
 var sock = require("./sock");
 var gfx = require("./gfx");
+function choose(a){
+	return a[Math.random()*a.length|0];
+}
+//[[],type]]
+function TerrainType(tts, tbl){
+	this.tts = tts;
+	this.tbl = tbl;
+	this.aroundlist = null;
+}
+TerrainType.prototype.build = function(w, h, x, y){
+	x = (x || w/2)|0;
+	y = (y || h/2)|0;
+	var tiles = new Array(w);
+	for(var i=0; i<w; i++){
+		tiles[i] = new Array(h);
+	}
+	tiles[x][y] = 0;
+	this.aroundlist = [];
+	this.generate(tiles, x, y);
+	for(var i=0; i<w; i++){
+		for(var j=0; j<h; j++){
+			if (tiles[i][j] == undefined){
+				tiles[i][j] = gfx["tiles_wall"][4];
+			}else if (tiles[i][j] == 63){
+				tiles[i][j] = gfx["tiles_waterstone"][4];
+			}else if (!(tiles[i][j]&1)){
+				tiles[i][j] = gfx["tiles_"+this.tts[0]+this.tts[1]][tiles[i][j]>>1];
+			}else{
+				tiles[i][j] = gfx["tiles_"+this.tts[1]][4];
+			}
+		}
+	}
+	this.aroundlist = null;
+	return tiles;
+}
+TerrainType.prototype.generateAround = function(tiles, x, y){
+	for(var i=-1; i<2; i++){
+		for(var j=-1; j<2; j++){
+			if (x == 0 && y == 0) continue;
+			var nx = x+i, ny = y+j;
+			if (boundCheck(tiles, nx, ny) && tiles[nx][ny] == 0){
+				this.generate(tiles, nx, ny);
+			}
+		}
+	}
+}
+function getTile(tiles, x, y){
+	if (boundCheck(tiles, x, y) && tiles[x][y] != undefined) return tiles[x][y]&1;
+}
+function getType(tiles, x, y, tbl){
+	if (boundCheck(tiles, x, y) && tiles[x][y] != undefined){
+		var txy = tiles[x][y];
+		return (txy&1) ? 15 : tbl[txy>>1];
+	}
+}
+function setTile(tiles, x, y, t){
+	if (boundCheck(tiles, x, y)) return tiles[x][y] = t;
+}
+function boundCheck(tiles, x, y){
+	return !(x<0 || y<0 || x>=tiles.length || y>=tiles[x].length);
+}
+function cmpWE(w, e){
+	return !(w&2) == !(e&1) && !(w&8) == !(e&4);
+}
+function cmpNS(n, s){
+	return !(n&4) == !(s&1) && !(n&8) == !(s&2);
+}
+function cmpXY(dx, dy, t1, t2){
+	if (dx == -1 && dy == -1) return !(t1&1) == !(t2&8);
+	if (dx == -1 && dy == 0) return cmpWE(t1, t2);
+	if (dx == -1 && dy == 1) return !(t1&2) == !(t2&4);
+	if (dx == 0 && dy == -1) return cmpNS(t1, t2);
+	if (dx == 0 && dy == 1) return cmpNS(t2, t1);
+	if (dx == 1 && dy == -1) return !(t1&4) == !(t2&2);
+	if (dx == 1 && dy == 0) return cmpWE(t2, t1);
+	if (dx == 1 && dy == 1) return !(t1&8) == !(t2&1);
+}
+TerrainType.prototype.generate = function(tiles, x, y){
+	var candidates = [];
+	tblscan:
+	for(var j=0; j<this.tbl.length; j++){
+		var a = this.tbl[j];
+		for(var i=0; i<8; i++){
+			var ii = i+(i>=4);
+			//if (!(ii&1)) continue;
+			var nx = x+(ii%3)-1, ny = y+(ii/3|0)-1;
+			var gt = getType(tiles, nx, ny, this.tbl);
+			if (gt != undefined && !cmpXY(x-nx, y-ny, a, gt)){
+				continue tblscan;
+			}
+		}
+		candidates.push([a, j]);
+	}
+	for(var i=0; i<8; i++){
+		var ii = i+(i>=4);
+		//if (!(ii&1)) continue;
+		var nx = x+(ii%3)-1, ny = y+(ii/3|0)-1;
+		var gt = getType(tiles, nx, ny, this.tbl);
+		if (gt != undefined && !cmpXY(x-nx, y-ny, 15, gt)){
+			break;
+		}
+	}
+	if (i == 8) candidates.push([15, -1]);
+	var chosen = choose(candidates);
+	console.log(candidates.length, candidates, chosen);
+	if(chosen){
+		if (chosen[1] == -1) tiles[x][y] = 31;
+		else tiles[x][y] = chosen[1]<<1;
+		var gen = [];
+		for(var i=0; i<8; i++){
+			var ii = i+(i>=4);
+			var nx = x+(ii%3)-1, ny = y+(ii/3|0)-1;
+			if (boundCheck(tiles, nx, ny) && tiles[nx][ny] == undefined){
+				this.generate(tiles, nx, ny);
+			}
+		}
+	}else tiles[x][y] = 63;
+}
+TerrainType.prototype.generateLoop = function(tiles){
+	while (this.aroundlist.length){
+		var y=this.aroundlist.pop(), x=this.aroundlist.pop();
+		this.generateAround(tiles, x, y);
+	}
+}
 function World(){
 	this.things = [];
 	this.keys = [];
@@ -10,6 +134,9 @@ function World(){
 	this.h = 60;
 	this.cw = 450/24;
 	this.ch = 300/24;
+	var terrains = getTerrainBuild();
+	this.tiles = terrains[0].build(this.w, this.h, 2, 2);/**/
+	/*
 	var ttype = ["stonegrass", "grass", "grass", "grass", "wall", "waterstone"];
 	for(var i=0; i<this.w; i++){
 		tiles[i] = [];
@@ -21,30 +148,29 @@ function World(){
 	for(var i=0; i<this.w; i++){
 		this.tiles[i] = [];
 		for(var j=0; j<this.h; j++){
-			var tt = ttype[tiles[i][j]];
+			var tij = tiles[i][j];
+			var tt = ttype[tij];
 			var t = 4;
 			if (tt != "grass"){
-				if (j>0 && i<this.w-1 && tiles[i][j] != tiles[i+1][j-1] && tt != "wall"){
-					t = 2;
-				}else if (i>0 && j>0 && tiles[i][j] != tiles[i-1][j-1] && tt != "wall"){
-					t = 0;
-				}else if (j>0 && tiles[i][j] != tiles[i][j-1] && tt != "wall"){
-					t = 1;
-				}else if (j<this.h-1 && tiles[i][j] != tiles[i][j+1]){
-					t = 7;
-				}else if (i<this.w-1 && tiles[i][j] != tiles[i+1][j]){
-					t = 5;
-				}else if (i>0 && tiles[i][j] != tiles[i-1][j]){
-					t = 3;
-				}else if (i<this.w-1 && j<this.h-1 && tiles[i][j] != tiles[i+1][j+1]){
-					t = 8;
-				}else if (i>0 && j<this.h-1 && tiles[i][j] != tiles[i-1][j+1]){
-					t = 6;
+				xyiter:
+				for(var x=-1; x<=1; x++){
+					for(var y=-1;y<=1;y++){
+						var nx = i+x, ny=j+y;
+						if (nx>-1 && this.nx<this.w && ny>-1 && ny<this.h && tij != tiles[nx][ny] && !(y == -1 && tt == "wall")){
+							t = (x+1)+(y+1)*3;
+							break xyiter;
+						}
+					}
 				}
 			}
 			this.tiles[i].push(gfx["tiles_"+tt][t]);
 		}
-	}
+	}/**/
+}
+function getTerrainBuild(){
+	var r = [];
+	r.push(new TerrainType(["stone", "grass"], [7, 3, 11, 5, 0, 10, 13, 12, 14, 8, 4, 2, 1]));
+	return r;
 }
 World.prototype.add = function(obj, idx){
 	obj.idx = idx;

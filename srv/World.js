@@ -36,9 +36,11 @@ World.prototype.step = function(){
 World.prototype.toJSON = function(player){
 	var data = {o:[]};
 	this.things.forEach(function(thing, idx){
-		var json = thing.toJSON();
-		if (thing == player) data.f = idx;
-		data.o.push(json);
+		if (thing){
+			var json = thing.toJSON();
+			if (thing == player) data.f = idx;
+			data.o.push(json);
+		}
 	});
 	return data;
 }
