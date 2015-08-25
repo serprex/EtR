@@ -74,6 +74,8 @@ exports.load = function(canvas, postload){
 				exports[asset][10] = tempf(2,3);
 				exports[asset][11] = tempf(1,4);
 				exports[asset][12] = tempf(2,4);
+				exports[asset][13] = tempf(0,3);
+				exports[asset][14] = tempf(0,4);
 			}
 		}else exports[asset] = tex;
 	}
