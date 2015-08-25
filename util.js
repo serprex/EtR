@@ -20,19 +20,19 @@ TerrainType.prototype.build = function(w, h){
 			this.generate(i, j);
 		}
 	}
-	var tiles = new Array(this.w);
-	for(var i=0; i<this.w; i++){
-		tiles[i] = new Array(this.h);
-		for(var j=0; j<this.h; j++){
-			var txy = this.get(i, j);
+	var tiles = new Array(w*h);
+	for(var j=0; j<this.h; j++){
+		for(var i=0; i<this.w; i++){
+			var idx = i+j*this.w;
+			var txy = this.tiles[idx];
 			if (txy == undefined){
-				tiles[i][j] = gfx["tiles_wall"][4];
+				tiles[idx] = gfx["tiles_wall"][4];
 			}else if (txy == 63){
-				tiles[i][j] = gfx["tiles_waterstone"][4];
+				tiles[idx] = gfx["tiles_waterstone"][4];
 			}else if (!(txy&1)){
-				tiles[i][j] = gfx["tiles_"+this.tts[0]+this.tts[1]][txy>>1];
+				tiles[idx] = gfx["tiles_"+this.tts[0]+this.tts[1]][txy>>1];
 			}else{
-				tiles[i][j] = gfx["tiles_"+this.tts[1]][4];
+				tiles[idx] = gfx["tiles_"+this.tts[1]][4];
 			}
 		}
 	}
@@ -242,6 +242,9 @@ Thing.prototype.colcheck = function(x, y){
 		if (thing != this && thing.solid && x+1>thing.x && x<thing.x+1 && y+1>thing.y && y<thing.y+1) return thing;
 	}
 }
+World.prototype.getTile = function(x, y){
+	return x>=0 && x<this.w && y>=0 && y<this.h ? this.tiles[x+y*this.w] : undefined;
+}
 World.prototype.render = function(){
 	if (!this.follow) return;
 	var x1 = this.follow.x - this.cw/2, y1 = this.follow.y - this.ch/2,
@@ -263,19 +266,20 @@ World.prototype.render = function(){
 	var ctx = gfx.ctx;
 	ctx.begin(x1, y1, x2, y2);
 	var fx1 = Math.floor(x1), fy1 = Math.floor(y1);
-	for(var i=fx1; i<=x2; i++){
-		for(var j=fy1; j<=y2; j++){
-			if (this.tiles[i] && this.tiles[i][j]) ctx.draw(this.tiles[i][j], i, j);
+	for(var j=fy1; j<=y2; j++){
+		for(var i=fx1; i<=x2; i++){
+			var tij = this.getTile(i, j);
+			if (tij) ctx.draw(tij, i, j);
 		}
 	}
 	this.things.forEach(function(thing){
 		if (thing.render) thing.render(ctx);
 	});
-	for(var i=fx1; i<=x2; i++){
-		for(var j=fy1+1; j<=Math.min(y2+1, this.h); j++){
-			if (this.tiles[i] && this.tiles[i][j] && this.tiles[i][j-1] &&
-				~gfx.tiles_wall.indexOf(this.tiles[i][j]) && !~gfx.tiles_wall.indexOf(this.tiles[i][j-1])){
-				ctx.draw(gfx.tiles_wall[gfx.tiles_wall.indexOf(this.tiles[i][j])%3], i, j-1);
+	for(var j=fy1+1; j<=Math.min(y2+1, this.h); j++){
+		for(var i=fx1; i<=x2; i++){
+			var tij = this.getTile(i, j), tiu = this.getTile(i, j-1);
+			if (tij && tiu && ~gfx.tiles_wall.indexOf(tij) && !~gfx.tiles_wall.indexOf(tiu)){
+				ctx.draw(gfx.tiles_wall[gfx.tiles_wall.indexOf(tij)%3], i, j-1);
 			}
 		}
 	}
