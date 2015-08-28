@@ -26,13 +26,13 @@ TerrainType.prototype.build = function(w, h){
 			var idx = i+j*this.w;
 			var txy = this.tiles[idx];
 			if (txy == undefined){
-				tiles[idx] = gfx["tiles_wall"][4];
+				tiles[idx] = gfx.tiles.wall[1];
 			}else if (txy == 63){
-				tiles[idx] = gfx["tiles_waterstone"][4];
+				tiles[idx] = gfx.tiles.water.stone[4];
 			}else if (!(txy&1)){
-				tiles[idx] = gfx["tiles_"+this.tts[0]+this.tts[1]][txy>>1];
+				tiles[idx] = gfx.tiles[this.tts[0]][this.tts[1]][txy>>1];
 			}else{
-				tiles[idx] = gfx["tiles_"+this.tts[1]][4];
+				tiles[idx] = gfx.tiles[this.tts[1]].plain;
 			}
 		}
 	}
@@ -59,16 +59,6 @@ function cmpNS(n, s){
 }
 function getCorner(t, x, y){
 	return !!(t&(x?(y?8:2):(y?4:1)));
-}
-function cmpXY(dx, dy, t1, t2){
-	if (dx == -1 && dy == -1) return !(t1&1) == !(t2&8);
-	if (dx == -1 && dy == 0) return cmpWE(t1, t2);
-	if (dx == -1 && dy == 1) return !(t1&2) == !(t2&4);
-	if (dx == 0 && dy == -1) return cmpNS(t1, t2);
-	if (dx == 0 && dy == 1) return cmpNS(t2, t1);
-	if (dx == 1 && dy == -1) return !(t1&4) == !(t2&2);
-	if (dx == 1 && dy == 0) return cmpWE(t2, t1);
-	if (dx == 1 && dy == 1) return !(t1&8) == !(t2&1);
 }
 function cmpCorner(t1, x1, y1, t2, x2, y2){
 	return t2 == undefined || getCorner(t1, x1, y1) == getCorner(t2, x2, y2);
@@ -118,6 +108,8 @@ function World(){
 	var tiles = [];
 	this.w = 32;
 	this.h = 24;
+	this.cx = 0;
+	this.cy = 0;
 	this.cw = 450/24;
 	this.ch = 300/24;
 	var terrains = getTerrainBuild();
@@ -247,7 +239,9 @@ World.prototype.getTile = function(x, y){
 }
 World.prototype.render = function(){
 	if (!this.follow) return;
-	var x1 = this.follow.x - this.cw/2, y1 = this.follow.y - this.ch/2,
+	this.cx = Math.max(Math.min(this.cx, this.follow.x+5.5), this.follow.x-6);
+	this.cy = Math.max(Math.min(this.cy, this.follow.y+3), this.follow.y-4);
+	var x1 = this.cx - this.cw/2, y1 = this.cy - this.ch/2,
 		x2 = x1 + this.cw, y2 = y1 + this.ch;
 	if (x2 > this.w){
 		x1 = this.w - this.cw;
@@ -275,18 +269,18 @@ World.prototype.render = function(){
 	this.things.forEach(function(thing){
 		if (thing.render) thing.render(ctx);
 	});
-	for(var j=fy1+1; j<=Math.min(y2+1, this.h); j++){
+	/*for(var j=fy1+1; j<=Math.min(y2+1, this.h); j++){
 		for(var i=fx1; i<=x2; i++){
 			var tij = this.getTile(i, j), tiu = this.getTile(i, j-1);
-			if (tij && tiu && ~gfx.tiles_wall.indexOf(tij) && !~gfx.tiles_wall.indexOf(tiu)){
-				ctx.draw(gfx.tiles_wall[gfx.tiles_wall.indexOf(tij)%3], i, j-1);
+			if (tij && tiu && ~gfx.tiles.wall.indexOf(tij) && !~gfx.tiles.wall.indexOf(tiu)){
+				ctx.draw(gfx.tiles.wall[gfx.tiles.wall.indexOf(tij)%3], i, j-1);
 			}
 		}
-	}
+	}*/
 	ctx.render();
 }
 Player.prototype.render = function(ctx){
-	ctx.draw(this.gfx, this.x, this.y, this.dir == 0);
+	ctx.draw(this.gfx, this.x, this.y, this.dir == 2);
 }
 exports.World = World;
 exports.Thing = Thing;
