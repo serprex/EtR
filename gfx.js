@@ -61,11 +61,11 @@ exports.load = function(canvas, postload){
 		}
 		var prev = exports;
 		for(var i=0; i<asplit.length; i++){
-			var a = asplit[i], islast = i+1 == asplit.length;
+			var a = asplit[i];
 			if (prev[a]){
 				prev = prev[a];
 			}else{
-				prev = prev[a] = i+1 == asplit.length ? tex : {};
+				prev = prev[a] = i+1 == asplit.length ? tex : (aid && i+2 == asplit.length) ? [] : {};
 			}
 		}
 	}

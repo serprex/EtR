@@ -1,9 +1,9 @@
-var util = require("./util");
 module.exports = function(canvas){
 	var gfx = require("./gfx");
 	gfx.load(canvas, function(){
 		var px = require("./px");
-		var world = new util.World();
+		var World = require("./usr/World");
+		var world = new World();
 		var sock = require("./sock");
 		sock.et.onmessage = function(msg){
 			var data = JSON.parse(msg.data);
