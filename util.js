@@ -12,7 +12,7 @@ function TerrainType(tts, tbl){
 	this.h = 0;
 }
 TerrainType.prototype.build = function(w, h){
-	this.tiles = new Array(w*h);
+	this.tiles = new Uint16Array(w*h);
 	this.w = w;
 	this.h = h;
 	for(var j=0; j<this.h; j++){
@@ -25,28 +25,28 @@ TerrainType.prototype.build = function(w, h){
 		for(var i=0; i<this.w; i++){
 			var idx = i+j*this.w;
 			var txy = this.tiles[idx];
-			if (txy == undefined){
+			if (txy == 0){
 				tiles[idx] = gfx.tiles.wall[1];
-			}else if (txy == 63){
+			}else if (txy == 65535){
 				tiles[idx] = gfx.tiles.water.stone[4];
-			}else if (!(txy&1)){
-				tiles[idx] = gfx.tiles[this.tts[0]][this.tts[1]][txy>>1];
-			}else{
+			}else if (txy == 31){
 				tiles[idx] = gfx.tiles[this.tts[1]].plain;
+			}else{
+				tiles[idx] = gfx.tiles[this.tts[0]][this.tts[1]][txy>>1];
 			}
 		}
 	}
 	return tiles;
 }
 TerrainType.prototype.get = function(x, y){
-	return this.bounds(x, y) ? this.tiles[x+y*this.w] : undefined;
+	return this.bounds(x, y) ? this.tiles[x+y*this.w] : 0;
 }
 TerrainType.prototype.set = function(x, y, a){
 	this.tiles[x+y*this.w] = a;
 }
 TerrainType.prototype.getType = function(x, y){
 	var txy = this.get(x, y);
-	return txy == undefined ? undefined : (txy&1) ? 15 : this.tbl[txy>>1];
+	return txy == 0 ? -1 : this.tbl[txy>>1];
 }
 TerrainType.prototype.bounds = function(x, y){
 	return !(x<0 || y<0 || x>=this.w || y>=this.h);
@@ -61,7 +61,7 @@ function getCorner(t, x, y){
 	return !!(t&(x?(y?8:2):(y?4:1)));
 }
 function cmpCorner(t1, x1, y1, t2, x2, y2){
-	return t2 == undefined || getCorner(t1, x1, y1) == getCorner(t2, x2, y2);
+	return t2 == -1 || getCorner(t1, x1, y1) == getCorner(t2, x2, y2);
 }
 TerrainType.prototype.isValid = function(x, y, tt){
 	for(var i=0; i<2; i++){
@@ -94,12 +94,10 @@ TerrainType.prototype.generate = function(x, y){
 	for(var j=0; j<this.tbl.length; j++){
 		if (this.isValid(x, y, this.tbl[j])) candidates.push(j);
 	}
-	if (this.isValid(x, y, 15)) candidates.push(-1);
 	var chosen = choose(candidates);
-	console.log(x+","+y, candidates.length, candidates, chosen);
 	if(chosen != undefined){
-		this.set(x, y, (chosen == -1) ? 1 : chosen<<1);
-	}else this.set(x, y, 63);
+		this.set(x, y, chosen<<1|1);
+	}else this.set(x, y, -1);
 }
 function World(){
 	this.things = [];
@@ -117,7 +115,7 @@ function World(){
 }
 function getTerrainBuild(){
 	var r = [];
-	r.push(new TerrainType(["stone", "grass"], new Uint8Array([7, 3, 11, 5, 0, 10, 13, 12, 14, 8, 4, 2, 1, 6, 9])));
+	r.push(new TerrainType(["stone", "grass"], new Uint8Array([7, 3, 11, 5, 0, 10, 13, 12, 14, 8, 4, 2, 1, 6, 9, 15])));
 	return r;
 }
 World.prototype.add = function(obj, idx){
