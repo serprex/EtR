@@ -6,7 +6,7 @@ function MersenneTwister(seed) {
 	this.mt = new Uint32Array(N);
 	this.seed(seed);
 };
-MersenneTwister.prototype.seed = function (seed) {
+MersenneTwister.prototype.seed = function(seed) {
 	var oldmt = seed >>> 0;
 	this.mti = N;
 	this.mt[0] = oldmt;
@@ -15,7 +15,7 @@ MersenneTwister.prototype.seed = function (seed) {
 		this.mt[mti] = oldmt = ((((s & 0xffff0000) >>> 16) * 1812433253 << 16) + (s & 0x0000ffff) * 1812433253 + mti) >>> 0;
 	}
 };
-MersenneTwister.prototype.int = function () {
+MersenneTwister.prototype.int = function() {
 	var y;
 	if (this.mti >= N) {
 		for (var kk = 0; kk < N-M; kk++) {
@@ -39,19 +39,22 @@ MersenneTwister.prototype.int = function () {
 	y ^= y >>> 18;
 	return y >>> 0;
 };
-MersenneTwister.prototype.int31 = function () {
+MersenneTwister.prototype.int31 = function() {
 	return this.int() >>> 1;
 };
-MersenneTwister.prototype.real = function () {
+MersenneTwister.prototype.real = function() {
 	return this.int() / (MAX_INT-1);
 };
-MersenneTwister.prototype.rnd = function () {
+MersenneTwister.prototype.rnd = function() {
 	return this.int() / MAX_INT;
 };
-MersenneTwister.prototype.clone = function () {
+MersenneTwister.prototype.clone = function() {
 	var obj = Object.create(MersenneTwister.prototype);
 	obj.mti = this.mti;
-	obj.mt = new Int32Array(this.mt);
+	obj.mt = new Uint32Array(this.mt);
 	return obj;
 };
+MersenneTwister.prototype.choose = function(a){
+	return a[a.length*this.rnd()|0];
+}
 module.exports = MersenneTwister;

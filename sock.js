@@ -1,3 +1,4 @@
+"use strict";
 var usercmd = require("./usercmd");
 var socket = new WebSocket("ws://"+location.hostname);
 var buffer = [];

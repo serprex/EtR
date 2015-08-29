@@ -1,9 +1,12 @@
-function TerrainType(tts, tbl){
+"use strict";
+var mt = require("./MersenneTwister");
+function TerrainType(seed, tts, tbl){
 	this.tts = tts;
 	this.tbl = tbl;
 	this.tiles = null;
 	this.w = 0;
 	this.h = 0;
+	this.rng = new mt(seed);
 }
 module.exports = TerrainType;
 var gfx = require("./gfx");
@@ -31,7 +34,7 @@ TerrainType.prototype.build = function(w, h){
 			}else if (txy == 60001){
 				tiles[idx] = gfx.tiles.wall[7];
 			}else if (txy == 31){
-				tiles[idx] = util.choose(gfx.tiles[this.tts[1]]);
+				tiles[idx] = this.rng.choose(gfx.tiles[this.tts[1]]);
 			}else{
 				tiles[idx] = gfx.tiles[this.tts[0]][this.tts[1]][txy>>1];
 			}
@@ -95,7 +98,7 @@ TerrainType.prototype.generate = function(x, y){
 	for(var j=0; j<this.tbl.length; j++){
 		if (this.isValid(x, y, this.tbl[j])) candidates.push(j);
 	}
-	var chosen = util.choose(candidates);
+	var chosen = this.rng.choose(candidates);
 	if(chosen != undefined){
 		this.set(x, y, chosen<<1|1);
 	}else this.set(x, y, -1);

@@ -1,3 +1,4 @@
+"use strict";
 function World(){
 	this.things = [];
 	this.keys = [];
@@ -10,7 +11,7 @@ function World(){
 	this.cw = 450/24;
 	this.ch = 300/24;
 	var terrains = getTerrainBuild();
-	this.tiles = terrains[0].build(this.w, this.h);/**/
+	this.tiles = terrains[0].build(this.w, this.h);
 }
 module.exports = World;
 var gfx = require("../gfx");
@@ -21,7 +22,7 @@ var Wall = require("./Wall");
 
 function getTerrainBuild(){
 	var r = [];
-	r.push(new TerrainType(["stone", "grass"], new Uint8Array([7, 3, 11, 5, 0, 10, 13, 12, 14, 8, 4, 2, 1, 6, 9, 15])));
+	r.push(new TerrainType(Math.random()*0x7fffffff, ["stone", "grass"], new Uint8Array([7, 3, 11, 5, 0, 10, 13, 12, 14, 8, 4, 2, 1, 6, 9, 15])));
 	return r;
 }
 World.prototype.add = function(obj, idx){
@@ -103,6 +104,13 @@ World.prototype.render = function(){
 	}*/
 	ctx.render();
 }
+World.prototype.hookSocket = function(){
+	var w = this;
+	sock.et.onmessage = function(msg){
+		var data = JSON.parse(msg.data);
+		w.event(data);
+	}
+}
 World.prototype.hookControls = function(){
 	var self = this;
 	document.body.addEventListener("keydown", function(e){
@@ -123,4 +131,13 @@ World.prototype.hookControls = function(){
 			lastmove = e.timeStamp;
 		}
 	});
+}
+World.prototype.hookLoop = function(){
+	var w = this;
+	setInterval(this.step.bind(this), 60);
+	function anim(){
+		w.render();
+		requestAnimationFrame(anim);
+	}
+	anim();
 }

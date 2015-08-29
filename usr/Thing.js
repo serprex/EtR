@@ -1,3 +1,4 @@
+"use strict";
 function Thing(x,y){
 	this.idx = -1;
 	this.setpos(x||-1, y||-1);

@@ -1,11 +1,12 @@
 #!/bin/node
+"use strict";
 var sutil = require("./srv/sutil");
 var World = require("./srv/World");
 var app = require("connect")().
 	use(require("compression")()).
 	use(require("serve-static")(__dirname, { maxAge: 2626262000 }));
 var Globe = new World();
-wss = new (require("ws/lib/WebSocketServer"))({server:app.listen(80)});
+var wss = new (require("ws/lib/WebSocketServer"))({server:app.listen(80)});
 sutil.wss = wss;
 var interval = setInterval(Globe.step.bind(Globe), 20);
 var Wall = require("./srv/Wall");

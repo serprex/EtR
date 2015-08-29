@@ -1,3 +1,4 @@
+"use strict";
 function Player(){
 	this.gfx = gfx.bird.down[0];
 	Thing.apply(this, arguments);
@@ -8,7 +9,7 @@ function Player(){
 }
 module.exports = Player;
 var Thing = require("./Thing");
-var gfx = require("./gfx");
+var gfx = require("../gfx");
 
 Player.prototype = Object.create(Thing.prototype);
 var pafps = 32/60;

@@ -1,3 +1,4 @@
+"use strict";
 function mk(name, func, ){
 }
 function DAG(name){
