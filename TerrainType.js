@@ -16,7 +16,8 @@ TerrainType.prototype.build = function(w, h){
 	this.tiles = new Uint16Array(w*h);
 	this.w = w;
 	this.h = h;
-	require("lvutil/wall_random")(this.tiles, w, h, 60001, .05);
+	//require("lvutil/wall_random")(this.tiles, w, h, 60001, .05);
+	require("lvutil/wall_walk")(this.tiles, w, h, {});
 	for(var j=0; j<this.h; j++){
 		for(var i=0; i<this.w; i++){
 			if (this.get(i, j) == 0) this.generate(i, j);
