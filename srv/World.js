@@ -28,6 +28,13 @@ World.prototype.createPlayer = function(socket){
 	sutil.broadcast("np", {i:p.idx}, socket);
 	return p;
 }
+World.prototype.createFoe = function(socket){
+	var Foe = require("./Foe");
+	var f = new Foe(10, 10);
+	this.add(f);
+	sutil.broadcast("nf", {x:f.x, y:f.y, i:f.idx});
+	return f;
+}
 World.prototype.step = function(){
 	this.things.forEach(function(thing){
 		if (thing && thing.act) thing.act();

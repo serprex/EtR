@@ -1,3 +1,5 @@
+"use strict";
+module.exports = Player;
 var Thing = require("./Thing");
 var sutil = require("./sutil");
 function Player(){
@@ -13,6 +15,9 @@ Player.prototype.act = function(){
 		var m = (dx&&dy?480*Math.sqrt(2):480)/32;
 		this.move(dx/m, dy/m);
 	}
+	if (this.keys[70]){
+		this.world.createFoe();
+	}
 }
 Player.prototype._toJSON = function(data){
 	data.oid = 0;
@@ -20,4 +25,3 @@ Player.prototype._toJSON = function(data){
 	data.quanta = sutil.untypeArray(this.quanta);
 	return data;
 }
-module.exports = Player;

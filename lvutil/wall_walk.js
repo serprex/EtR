@@ -1,3 +1,4 @@
+"use strict";
 function mkBuilder(x, y, opt){
 	var b = Object.create(opt);
 	b.dir = Math.random()*4|0;
@@ -37,6 +38,6 @@ module.exports = function(tiles, w, h, options){
 		});
 	}
 	for(var i=0; i<w*h; i++){
-		if (!clear.has(i)) tiles[x] = 60001;
+		if (!clear.has(i)) tiles[i] = 60001;
 	}
 }

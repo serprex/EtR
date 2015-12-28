@@ -18,7 +18,6 @@ exports.emit = function(sock, cmd, data){
 	}
 }
 exports.broadcast = function(cmd, data, skip){
-	console.log(cmd, data);
 	var wss = exports.wss;
 	if (wss){
 		if (!data) data = {};

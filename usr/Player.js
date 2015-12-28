@@ -1,11 +1,11 @@
 "use strict";
 function Player(){
 	this.gfx = gfx.bird.down[0];
-	Thing.apply(this, arguments);
 	this.hp = 10;
 	this.frame = 0;
 	this.quanta = new Uint8Array(12);
 	this.dir = 3;
+	Thing.apply(this, arguments);
 }
 module.exports = Player;
 var Thing = require("./Thing");

@@ -18,6 +18,7 @@ var gfx = require("../gfx");
 var sock = require("../sock");
 var TerrainType = require("../TerrainType");
 var Player = require("./Player");
+var Foe = require("./Foe");
 var Wall = require("./Wall");
 
 function getTerrainBuild(){
@@ -37,6 +38,10 @@ World.prototype.rm = function(obj){
 World.prototype.np = function(e){
 	this.add(new Player(), e.i);
 }
+World.prototype.nf = function(e){
+	var f = new Foe(e.x, e.y);
+	this.add(f, e.i);
+}
 World.prototype.die = function(e){
 	this.rm(e.things[e.i]);
 }
@@ -49,7 +54,20 @@ World.prototype.step = function(){
 		if (thing.act) thing.act();
 	});
 }
-var os = [function(){var p=new Player(this.x, this.y);p.hp=this.hp;p.quanta=this.quanta;return p;}, function(){return new Wall(this.x, this.y);}];
+var os = [
+	function(){
+		var p=new Player(this.x, this.y);
+		p.hp=this.hp;
+		p.quanta=this.quanta;
+		return p;
+	}, function(){
+		return new Wall(this.x, this.y);
+	}, function() {
+		var f = new Foe(this.x, this.y);
+		f.hp = this.hp;
+		return f;
+	}
+];
 World.prototype.world = function(data){
 	this.things.length = 0;
 	data.o.forEach(function(obj){
