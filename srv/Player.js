@@ -14,6 +14,9 @@ Player.prototype.act = function(){
 	if (dx || dy){
 		var m = (dx&&dy?480*Math.sqrt(2):480)/32;
 		this.move(dx/m, dy/m);
+		if (this.keys[69]){
+			this.world.createMissile(this.x, this.y, dx/m*3, dy/m*3);
+		}
 	}
 	if (this.keys[70]){
 		this.world.createFoe();

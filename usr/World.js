@@ -3,7 +3,6 @@ function World(){
 	this.things = [];
 	this.keys = [];
 	this.follow = null;
-	var tiles = [];
 	this.w = 32;
 	this.h = 24;
 	this.cx = 0;
@@ -20,6 +19,7 @@ var TerrainType = require("../TerrainType");
 var Player = require("./Player");
 var Foe = require("./Foe");
 var Wall = require("./Wall");
+var Missile = require("./Missile");
 
 function getTerrainBuild(){
 	var r = [];
@@ -42,6 +42,10 @@ World.prototype.nf = function(e){
 	var f = new Foe(e.x, e.y);
 	this.add(f, e.i);
 }
+World.prototype.nm = function(e){
+	var m = new Missile(e.x, e.y, e.dx, e.dy);
+	this.add(m, e.i);
+}
 World.prototype.die = function(e){
 	this.rm(e.things[e.i]);
 }
@@ -55,18 +59,21 @@ World.prototype.step = function(){
 	});
 }
 var os = [
-	function(){
+	function(){ //0
 		var p=new Player(this.x, this.y);
 		p.hp=this.hp;
 		p.quanta=this.quanta;
 		return p;
-	}, function(){
+	}, function(){ //1
 		return new Wall(this.x, this.y);
-	}, function() {
+	}, function() { //2
 		var f = new Foe(this.x, this.y);
 		f.hp = this.hp;
 		return f;
-	}
+	}, function() { //3
+		var m = new Missile(this.x, this.y, this.dx, this.dy);
+		return m;
+	},
 ];
 World.prototype.world = function(data){
 	this.things.length = 0;
