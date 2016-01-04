@@ -6,3 +6,13 @@ exports.sum = function(a){
 	}
 	return r;
 }
+exports.untypeArray = function(a){
+	return a.length == 1 ? [a[0]] : Array.apply(null, a);
+}
+exports.parseJSON = function(str){
+	try{
+		return JSON.parse(str);
+	}catch(e){
+		return null;
+	}
+}

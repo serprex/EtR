@@ -1,3 +1,4 @@
+"use strict";
 function Missile(x, y, dx, dy){
 	Thing.apply(this, arguments);
 	this.dx = dx;

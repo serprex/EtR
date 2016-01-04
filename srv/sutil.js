@@ -1,13 +1,4 @@
-exports.parseJSON = function(str){
-	try{
-		return JSON.parse(str);
-	}catch(e){
-		return null;
-	}
-}
-exports.untypeArray = function(a){
-	return a.length == 1 ? [a[0]] : Array.apply(null, a);
-}
+"use strict";
 exports.emit = function(sock, cmd, data){
 	var wss = exports.wss;
 	if (wss && sock.readyState == 1){

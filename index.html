@@ -1,9 +1,11 @@
 <script src="browser.js"></script>
 <canvas id="canv" width=900 height=600></canvas>
+<span id="tbox"></span>
 <script>
 require("./gfx").load(document.getElementById("canv"), function(){
-	var World = require("./usr/World");
-	var w = new World();
+	var World = require("./World")
+	var ui = require("./ui");
+	var w = new ui(new World());
 	w.hookSocket();
 	w.hookControls();
 	w.hookLoop();

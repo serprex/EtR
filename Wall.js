@@ -1,3 +1,4 @@
+"use strict";
 var Thing = require("./Thing");
 function Wall(){
 	Thing.apply(this, arguments);
