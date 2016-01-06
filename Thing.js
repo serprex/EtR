@@ -12,6 +12,14 @@ Thing.prototype.move = function(dx, dy){
 	var colwith = this.colcheck(this.x+dx, this.y+dy);
 	if (!colwith){
 		this.setpos(this.x+dx, this.y+dy);
+	}else{
+		if (this.collide){
+			this.collide(colwith);
+		}
+		if (colwith.collide){
+			colwith.collide(this);
+		}
+		if (colwith.idx == -1) this.move(dx, dy);
 	}
 }
 Thing.prototype.colcheck = function(x, y){

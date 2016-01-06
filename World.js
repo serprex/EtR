@@ -4,11 +4,14 @@ var Player = require("./Player");
 var Foe = require("./Foe");
 var Wall = require("./Wall");
 var Missile = require("./Missile");
+var MersenneTwister = require("./MersenneTwister");
 
-function World(){
+function World(seed){
+	this.seed(seed);
 	this.things = [];
 	this.freeslots = [];
 }
+World.prototype = Object.create(MersenneTwister.prototype);
 World.prototype.add = function(obj){
 	if (this.freeslots.length){
 		var idx = this.freeslots.pop();
@@ -56,7 +59,10 @@ World.prototype.event = function(data){
 	if (ev) ev.call(this, data);
 }
 World.prototype.toJSON = function(player){
-	var data = {o:[]};
+	var data = {
+		mti:this.mti,
+		mt:util.untypeArray(this.mt),
+		o:[]};
 	this.things.forEach(function(thing, idx){
 		if (thing){
 			var json = thing.toJSON();
@@ -85,6 +91,8 @@ var os = [
 ];
 var Events = {
 	world:function(data){
+		this.mti = data.mti;
+		this.mt = new Uint32Array(data.mt);
 		this.things.length = 0;
 		data.o.forEach(function(obj){
 			console.log(obj);

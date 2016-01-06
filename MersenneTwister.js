@@ -48,13 +48,16 @@ MersenneTwister.prototype.real = function () {
 MersenneTwister.prototype.rnd = function () {
 	return this.int() / MAX_INT;
 };
+MersenneTwister.prototype.upto = function(n) {
+	return this.real()*n|0;
+}
 MersenneTwister.prototype.choose = function (a) {
 	return a[this.real()*a.length|0];
 };
 MersenneTwister.prototype.clone = function () {
 	var obj = Object.create(MersenneTwister.prototype);
 	obj.mti = this.mti;
-	obj.mt = new Int32Array(this.mt);
+	obj.mt = new Uint32Array(this.mt);
 	return obj;
 };
 module.exports = MersenneTwister;

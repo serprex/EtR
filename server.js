@@ -8,7 +8,7 @@ var Wall = require("./Wall");
 var app = require("connect")().
 	use(require("compression")()).
 	use(require("serve-static")(__dirname, { maxAge: 2626262000 }));
-var Globe = new World();
+var Globe = new World(Math.random()*0x7fffffff);
 Globe.add(new Wall(2, 3));
 Globe.add(new Wall(2, 4));
 Globe.add(new Wall(2, 5));
