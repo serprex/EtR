@@ -1,6 +1,7 @@
 "use strict";
 module.exports = Player;
 var Thing = require("./Thing");
+var Foe = require("./Foe");
 var util = require("./util");
 var gfx = require("./gfx");
 function Player(){
@@ -19,6 +20,11 @@ Player.prototype.event = function(x){
 }
 Player.prototype.render = function(ctx){
 	ctx.draw(gfx.bird.down[0], this.x, this.y, false);
+}
+Player.prototype.collide = function(o, issrc){
+	if (issrc && o instanceof Foe){
+		this.attack(o);
+	}
 }
 Player.prototype._toJSON = function(data){
 	data.oid = 0;

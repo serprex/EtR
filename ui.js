@@ -7,8 +7,8 @@ function ui(world){
 	this.cy = 0;
 	this.cw = 450/24;
 	this.ch = 300/24;
-	var terrains = getTerrainBuild();
-	this.tiles = terrains[0].build(this.w, this.h);
+	var terrain = getTerrainBuild();
+	this.tiles = terrain.build(this.w, this.h);
 }
 module.exports = ui;
 var gfx = require("./gfx");
@@ -16,9 +16,7 @@ var sock = require("./sock");
 var TerrainType = require("./TerrainType");
 
 function getTerrainBuild(){
-	var r = [];
-	r.push(new TerrainType(Math.random()*0x7fffffff, ["stone", "grass"], new Uint8Array([7, 3, 11, 5, 0, 10, 13, 12, 14, 8, 4, 2, 1, 6, 9, 15])));
-	return r;
+	return new TerrainType(Math.random()*0x7fffffff, ["stone", "grass"], new Uint8Array([7, 3, 11, 5, 0, 10, 13, 12, 14, 8, 4, 2, 1, 6, 9, 15])));
 }
 ui.prototype.getTile = function(x, y){
 	return x>=0 && x<this.w && y>=0 && y<this.h ? this.tiles[x+y*this.w] : undefined;
